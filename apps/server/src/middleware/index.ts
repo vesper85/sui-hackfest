@@ -96,8 +96,39 @@ export const authMiddleware = async (c: Context, next: Next) => {
 
     const token = authHeader.substring(7);
 
-    c.set("walletAddress", "0x1234567890abcdef");
-    c.set("userId", "user-id");
+    try {
+        const { verifyToken } = await import("../services/auth.service");
+        const { walletAddress } = await verifyToken(token);
 
-    await next();
+        // Set wallet context
+        c.set("walletAddress", walletAddress);
+
+        // Get user from database
+        const { db } = await import("../db");
+        const { users } = await import("../db/schema");
+        const { eq } = await import("drizzle-orm");
+
+        const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.walletAddress, walletAddress));
+
+        if (user) {
+            c.set("userId", user.id);
+            c.set("userType", user.userType);
+        }
+
+        await next();
+    } catch (error) {
+        return c.json(
+            {
+                success: false,
+                error: {
+                    code: "UNAUTHORIZED",
+                    message: "Invalid or expired token",
+                },
+            },
+            401
+        );
+    }
 };

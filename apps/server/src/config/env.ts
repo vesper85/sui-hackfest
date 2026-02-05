@@ -66,7 +66,9 @@ export const config = {
     app: {
         env: env.NODE_ENV,
         port: parseInt(env.PORT, 10),
-        jwtSecret: env.JWT_SECRET,
+    },
+    jwt: {
+        secret: env.JWT_SECRET,
     },
     sui: {
         network: env.SUI_NETWORK,

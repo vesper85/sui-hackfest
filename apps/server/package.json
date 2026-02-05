@@ -5,30 +5,33 @@
   "private": true,
   "scripts": {
     "dev": "bun run --watch src/index.ts",
+    "worker": "bun run src/queue/worker.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/pdf-parse": "^1.1.5",
     "drizzle-kit": "^0.31.8"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.1",
-    "hono": "^4.11.7",
     "@aws-sdk/client-s3": "^3.705.0",
     "@aws-sdk/s3-request-presigner": "^3.705.0",
-    "openai": "^4.77.0",
-    "postgres": "^3.4.5",
-    "zod": "^3.24.1",
-    "nanoid": "^5.0.9",
-    "pdf-parse": "^1.1.1",
-    "bullmq": "^5.32.2",
-    "ioredis": "^5.4.2",
     "@hono/zod-validator": "^0.4.1",
-    "dotenv": "^16.4.7"
+    "bullmq": "^5.32.2",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.11.7",
+    "ioredis": "^5.4.2",
+    "jose": "^6.1.3",
+    "nanoid": "^5.0.9",
+    "openai": "^4.77.0",
+    "pdf-parse": "^1.1.1",
+    "postgres": "^3.4.5",
+    "zod": "^3.24.1"
   }
 }

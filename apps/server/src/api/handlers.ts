@@ -206,8 +206,13 @@ export const uploadDocument = async (c: Context) => {
             })
             .where(eq(documentSubmissions.id, submissionId as string));
 
-        // Process document with LLM (async - don't wait)
-        processDocumentAsync(document.id, document.s3Key, document.documentType);
+        // Queue document processing job
+        const { documentProcessingQueue } = await import("../queue/config");
+        await documentProcessingQueue.add("process-document", {
+            documentId: document.id,
+            s3Key: document.s3Key,
+            documentType: document.documentType,
+        });
 
         return c.json({
             documentId: document.id,
@@ -393,8 +398,11 @@ export const finalizeSubmission = async (c: Context) => {
             );
         }
 
-        // Generate underwriting report asynchronously
-        generateUnderwritingReportAsync(submission.id);
+        // Queue underwriting report generation
+        const { underwritingQueue } = await import("../queue/config");
+        await underwritingQueue.add("generate-report", {
+            submissionId: submission.id,
+        });
 
         return c.json({
             submissionId: submission.id,

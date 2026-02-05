@@ -197,7 +197,7 @@ export interface ProcessingJob {
 export class AppError extends Error {
     constructor(
         public statusCode: number,
-        public message: string,
+        public override message: string,
         public code?: string
     ) {
         super(message);

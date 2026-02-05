@@ -15,12 +15,10 @@ import {
 
 const app = new Hono();
 
-// Global middleware
 app.use("*", requestLogger);
 app.use("*", corsMiddleware);
 app.use("*", errorHandler);
 
-// Health check
 app.get("/", (c) => {
     return c.json({
         service: "SUI UW",
@@ -30,7 +28,6 @@ app.get("/", (c) => {
     });
 });
 
-// Health endpoint
 app.get("/health", async (c) => {
     const [database, s3, llm] = await Promise.all([
         checkDatabaseHealth(),
@@ -52,10 +49,8 @@ app.get("/health", async (c) => {
     return c.json(health, allHealthy ? 200 : 503);
 });
 
-// Mount API routes
 app.route("/api", routes);
 
-// 404 handler
 app.notFound((c) => {
     return c.json(
         {
@@ -84,6 +79,20 @@ console.log(`
 console.log(`Server starting on http://localhost:${config.app.port}`);
 console.log(`API available at http://localhost:${config.app.port}/api`);
 console.log(`Health check: http://localhost:${config.app.port}/health\n`);
+
+const shouldStartWorkers = process.env.START_WORKERS !== "false";
+
+if (shouldStartWorkers) {
+    console.log("📦 Starting background workers...");
+    import("./queue/worker").then(({ startWorkers }) => {
+        startWorkers();
+    }).catch((err) => {
+        console.error("❌ Failed to start workers:", err);
+        console.log("💡 You can run workers separately with: bun run worker");
+    });
+} else {
+    console.log("⚠️  Workers not started. Run separately with: bun run worker\n");
+}
 
 export default {
     port: config.app.port,
