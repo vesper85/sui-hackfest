@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Environment variables should be passed in at runtime or via .env file
+      # DATABASE_URL=
+      # REDIS_HOST=
+      # REDIS_PORT=
+      # ...
+    restart: always
