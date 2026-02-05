@@ -18,6 +18,17 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",
-    "hono": "^4.11.7"
+    "hono": "^4.11.7",
+    "@aws-sdk/client-s3": "^3.705.0",
+    "@aws-sdk/s3-request-presigner": "^3.705.0",
+    "openai": "^4.77.0",
+    "postgres": "^3.4.5",
+    "zod": "^3.24.1",
+    "nanoid": "^5.0.9",
+    "pdf-parse": "^1.1.1",
+    "bullmq": "^5.32.2",
+    "ioredis": "^5.4.2",
+    "@hono/zod-validator": "^0.4.1",
+    "dotenv": "^16.4.7"
   }
 }
