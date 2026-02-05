@@ -147,7 +147,6 @@ Extract the following information in JSON format:
   "accountHolder": "string or null",
   "financialInstitution": "string or null",
   
-  // For bank statements (include if applicable)
   "transactions": [
     {
       "date": "ISO date",
@@ -160,20 +159,17 @@ Extract the following information in JSON format:
   "averageMonthlyIncome": number,
   "averageMonthlyExpenses": number,
   
-  // For asset documents (include if applicable)
   "assetType": "string",
   "assetValue": number,
   "assetOwner": "string",
   "assetDescription": "string",
   
-  // For business financials (include if applicable)
   "revenue": number,
   "expenses": number,
   "netIncome": number,
   "assets": number,
   "liabilities": number,
   
-  // Confidence and metadata
   "confidence": number (0-1),
   "warnings": ["string"],
   "needsHumanReview": boolean

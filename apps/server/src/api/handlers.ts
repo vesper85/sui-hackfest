@@ -398,11 +398,8 @@ export const finalizeSubmission = async (c: Context) => {
             );
         }
 
-        // Queue underwriting report generation
-        const { underwritingQueue } = await import("../queue/config");
-        await underwritingQueue.add("generate-report", {
-            submissionId: submission.id,
-        });
+        // Generate underwriting report asynchronously
+        generateUnderwritingReportAsync(submission.id);
 
         return c.json({
             submissionId: submission.id,

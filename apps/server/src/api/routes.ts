@@ -25,37 +25,28 @@ import {
 const app = new Hono();
 const borrower = new Hono();
 
-// Create new submission
 borrower.post(
     "/submit",
     zValidator("json", createSubmissionSchema),
     createSubmission
 );
 
-// Upload document
 borrower.post("/upload-document", uploadDocument);
 
-// Finalize submission and trigger processing
 borrower.post("/finalize-submission", finalizeSubmission);
 
-// Get submission status
 borrower.get("/submission/:submissionId", getSubmission);
 
-// Get underwriting report
 borrower.get("/report/:submissionId", getUnderwritingReport);
 
-// Apply for loan
 borrower.post("/apply-loan", zValidator("json", applyLoanSchema), applyLoan);
 
 const lender = new Hono();
 
-// List all pools
 lender.get("/pools", listPools);
 
-// Get pool details
 lender.get("/pools/:poolId", getPool);
 
-// Get lender positions
 lender.get("/positions", getLenderPositions);
 
 // ============================================================================
@@ -64,13 +55,10 @@ lender.get("/positions", getLenderPositions);
 
 const pools = new Hono();
 
-// List pools
 pools.get("/", listPools);
 
-// Get pool details
 pools.get("/:poolId", getPool);
 
-// Deposit to pool (returns transaction data)
 pools.post("/:poolId/deposit", async (c) => {
     const { amount, walletAddress } = await c.req.json();
 
@@ -87,7 +75,6 @@ pools.post("/:poolId/deposit", async (c) => {
     });
 });
 
-// Withdraw from pool (returns transaction data)
 pools.post("/:poolId/withdraw", async (c) => {
     const { lpTokens, walletAddress } = await c.req.json();
 
@@ -106,16 +93,12 @@ pools.post("/:poolId/withdraw", async (c) => {
 
 const admin = new Hono();
 
-// List pending submissions
 admin.get("/submissions/pending", getPendingSubmissions);
 
-// Approve report
 admin.post("/report/:reportId/approve", approveReport);
 
-// Reject report
 admin.post("/report/:reportId/reject", rejectReport);
 
-// Analytics
 admin.get("/analytics", getAnalytics);
 
 app.route("/borrower", borrower);

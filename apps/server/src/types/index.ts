@@ -21,7 +21,6 @@ export interface CreateSubmissionResponse {
     status: string;
 }
 
-// Document Upload
 export const uploadDocumentSchema = z.object({
     submissionId: z.string().uuid(),
     documentType: z.enum([
@@ -40,7 +39,6 @@ export const uploadDocumentSchema = z.object({
 
 export type UploadDocumentRequest = z.infer<typeof uploadDocumentSchema>;
 
-// Underwriting Report
 export interface FinancialSummary {
     totalAssets: number;
     totalLiabilities: number;
@@ -86,7 +84,6 @@ export interface UnderwritingReportResponse {
     flags: string[];
 }
 
-// Loan Application
 export const applyLoanSchema = z.object({
     reportId: z.string().uuid(),
     requestedAmount: z.number().positive(),
@@ -97,7 +94,6 @@ export const applyLoanSchema = z.object({
 
 export type ApplyLoanRequest = z.infer<typeof applyLoanSchema>;
 
-// Pool Queries
 export const poolQuerySchema = z.object({
     riskTier: z.enum(["AAA", "AA", "A", "BBB", "BB", "B", "C", "D"]).optional(),
     minApy: z.number().optional(),
@@ -114,7 +110,6 @@ export interface DocumentExtractionResult {
     accountHolder: string | null;
     financialInstitution: string | null;
 
-    // For bank statements
     transactions?: Array<{
         date: string;
         description: string;
@@ -125,20 +120,17 @@ export interface DocumentExtractionResult {
     averageMonthlyIncome?: number;
     averageMonthlyExpenses?: number;
 
-    // For asset documents
     assetType?: string;
     assetValue?: number;
     assetOwner?: string;
     assetDescription?: string;
 
-    // For business financials
     revenue?: number;
     expenses?: number;
     netIncome?: number;
     assets?: number;
     liabilities?: number;
 
-    // Confidence and metadata
     confidence: number;
     warnings: string[];
     needsHumanReview: boolean;

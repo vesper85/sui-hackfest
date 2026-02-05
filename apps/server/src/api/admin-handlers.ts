@@ -54,7 +54,7 @@ export const getPendingSubmissions = async (c: Context) => {
 export const approveReport = async (c: Context) => {
     try {
         const reportId = c.req.param("reportId");
-        const userId = c.get("userId"); // From auth middleware
+        const userId = c.get("userId");
 
         const [report] = await db
             .update(underwritingReports)
@@ -124,7 +124,6 @@ export const rejectReport = async (c: Context) => {
  */
 export const getAnalytics = async (c: Context) => {
     try {
-        // Get counts
         const [submissionCount] = await db
             .select({ count: sql<number>`count(*)` })
             .from(documentSubmissions);
@@ -140,7 +139,6 @@ export const getAnalytics = async (c: Context) => {
             })
             .from(lendingPools);
 
-        // Calculate average processing time
         const completedSubmissions = await db
             .select({
                 createdAt: documentSubmissions.createdAt,
@@ -182,7 +180,6 @@ export const getLenderPositions = async (c: Context) => {
     try {
         const walletAddress = c.get("walletAddress");
 
-        // Get user
         const [user] = await db
             .select()
             .from(users)
@@ -196,12 +193,10 @@ export const getLenderPositions = async (c: Context) => {
             });
         }
 
-        // Get all deposits for this user
         const deposits = await db.query.poolDeposits.findMany({
             where: (deposits, { eq }) => eq(deposits.lenderUserId, user.id),
         });
 
-        // Get pool details for each deposit
         const positions = await Promise.all(
             deposits.map(async (deposit) => {
                 const [pool] = await db

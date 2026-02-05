@@ -44,7 +44,6 @@ class UnderwritingService {
 
         const ltvRatio = requestedLoanAmount / totalCollateralValue;
 
-        // LTV Score (lower ratio is better)
         let ltvScore = 0;
         if (ltvRatio <= 0.5) ltvScore = 100;
         else if (ltvRatio <= 0.6) ltvScore = 90;
@@ -53,7 +52,6 @@ class UnderwritingService {
         else if (ltvRatio <= 0.9) ltvScore = 25;
         else ltvScore = 10;
 
-        // Liquidity Score (how easily collateral can be sold)
         const liquidityWeights: Record<string, number> = {
             crypto: 95,
             cash: 100,
@@ -70,13 +68,11 @@ class UnderwritingService {
                 return score + (liquidityWeights[asset.assetType] || 50);
             }, 0) / collateralAssetsList.length;
 
-        // Verification Score
         const verifiedCount = collateralAssetsList.filter(
             (a) => a.verificationStatus === "verified"
         ).length;
         const verificationScore = (verifiedCount / collateralAssetsList.length) * 100;
 
-        // Weighted average
         const overallCollateralScore =
             ltvScore * 0.5 + liquidityScore * 0.3 + verificationScore * 0.2;
 
@@ -121,7 +117,6 @@ class UnderwritingService {
         totalCollateralValue: number,
         riskTier: string
     ): number {
-        // Max LTV by risk tier
         const maxLtvByTier: Record<string, number> = {
             AAA: 0.8,
             AA: 0.75,
@@ -159,7 +154,6 @@ class UnderwritingService {
      * Generate complete underwriting report
      */
     async generateUnderwritingReport(submissionId: string): Promise<string> {
-        // Get submission with borrower profile
         const [submission] = await db
             .select()
             .from(documentSubmissions)
@@ -178,7 +172,6 @@ class UnderwritingService {
             throw new Error("Borrower profile not found");
         }
 
-        // Get all document extractions for this submission
         const allDocuments = await db.query.documents.findMany({
             where: (documents, { eq }) => eq(documents.submissionId, submissionId),
         });
@@ -191,13 +184,11 @@ class UnderwritingService {
 
         const extractedData = extractions.map((e) => e.structuredData);
 
-        // Get collateral assets
         const collateralList = await db
             .select()
             .from(collateralAssets)
             .where(eq(collateralAssets.submissionId, submissionId));
 
-        // Calculate financial metrics from extracted data
         const financialMetrics = this.aggregateFinancialMetrics(extractedData);
 
         // Calculate collateral score
@@ -212,11 +203,9 @@ class UnderwritingService {
             estimatedLoanRequest
         );
 
-        // Get LLM probability assessment
         const { result: probabilityAssessment, tokensUsed, cost } =
             await llmService.assessDefaultProbability(borrower, extractedData);
 
-        // Calculate combined risk score
         const combinedRiskScore = this.calculateCombinedRiskScore(
             collateralAssessment.overallCollateralScore,
             probabilityAssessment.overallProbabilityScore
@@ -233,7 +222,6 @@ class UnderwritingService {
             0.8
         );
 
-        // Create underwriting report in database
         const [report] = await db
             .insert(underwritingReports)
             .values({
@@ -241,7 +229,6 @@ class UnderwritingService {
                 borrowerId: borrower.id,
                 status: "pending_review",
 
-                // Financial metrics
                 totalAssetsUsd: financialMetrics.totalAssets.toString(),
                 totalLiabilitiesUsd: financialMetrics.totalLiabilities.toString(),
                 netWorthUsd: (
@@ -251,20 +238,17 @@ class UnderwritingService {
                 monthlyExpensesUsd: financialMetrics.monthlyExpenses.toString(),
                 debtToIncomeRatio: financialMetrics.debtToIncomeRatio.toString(),
 
-                // Risk scores
                 collateralScore: collateralAssessment.overallCollateralScore.toString(),
                 probabilityScore: probabilityAssessment.overallProbabilityScore.toString(),
                 combinedRiskScore: combinedRiskScore.toString(),
                 riskTier,
 
-                // Lending terms
                 maxLoanAmountUsd: maxLoanAmount.toString(),
                 recommendedLtvRatio: recommendedLtv.toString(),
                 recommendedInterestRate: recommendedInterestRate.toString(),
                 recommendedLoanTermDays: 365,
                 requiredCollateralUsd: totalCollateralValue.toString(),
 
-                // Metadata
                 reportData: {
                     financialMetrics,
                     collateralAssessment,
