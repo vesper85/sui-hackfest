@@ -1,0 +1,108 @@
+{
+  "portfolio": {
+    "totalInvestments": 125000,
+    "expectedReturns": 18750,
+    "availableForWithdrawal": 32500,
+    "averageApy": 14.8
+  },
+  "investments": [
+    {
+      "id": "inv-1",
+      "poolId": "pool-1",
+      "poolName": "TechFin Growth Fund",
+      "amount": 50000,
+      "expectedReturn": 6250,
+      "apy": 12.5,
+      "investedAt": "2024-12-15",
+      "maturityDate": "2025-12-15",
+      "status": "Active"
+    },
+    {
+      "id": "inv-2",
+      "poolId": "pool-2",
+      "poolName": "African Trade Finance",
+      "amount": 25000,
+      "expectedReturn": 4550,
+      "apy": 18.2,
+      "investedAt": "2025-01-05",
+      "maturityDate": "2025-07-05",
+      "status": "Active"
+    },
+    {
+      "id": "inv-3",
+      "poolId": "pool-3",
+      "poolName": "LATAM Agricultural Credits",
+      "amount": 50000,
+      "expectedReturn": 7900,
+      "apy": 15.8,
+      "investedAt": "2024-11-01",
+      "maturityDate": "2025-08-01",
+      "status": "Active"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "tx-1",
+      "type": "Investment",
+      "poolName": "TechFin Growth Fund",
+      "amount": 50000,
+      "date": "2024-12-15",
+      "status": "Completed",
+      "txHash": "0x1234567890abcdef1234567890abcdef12345678"
+    },
+    {
+      "id": "tx-2",
+      "type": "Interest",
+      "poolName": "TechFin Growth Fund",
+      "amount": 520.83,
+      "date": "2025-01-15",
+      "status": "Completed",
+      "txHash": "0xabcdef1234567890abcdef1234567890abcdef12"
+    },
+    {
+      "id": "tx-3",
+      "type": "Investment",
+      "poolName": "African Trade Finance",
+      "amount": 25000,
+      "date": "2025-01-05",
+      "status": "Completed",
+      "txHash": "0x9876543210fedcba9876543210fedcba98765432"
+    },
+    {
+      "id": "tx-4",
+      "type": "Investment",
+      "poolName": "LATAM Agricultural Credits",
+      "amount": 50000,
+      "date": "2024-11-01",
+      "status": "Completed",
+      "txHash": "0xfedcba9876543210fedcba9876543210fedcba98"
+    },
+    {
+      "id": "tx-5",
+      "type": "Redemption",
+      "poolName": "TechFin Growth Fund",
+      "amount": 10000,
+      "date": "2025-01-20",
+      "status": "Completed",
+      "txHash": "0x0123456789abcdef0123456789abcdef01234567"
+    }
+  ],
+  "analytics": {
+    "investmentHistory": [
+      {"month": "Aug", "value": 20000},
+      {"month": "Sep", "value": 35000},
+      {"month": "Oct", "value": 45000},
+      {"month": "Nov", "value": 95000},
+      {"month": "Dec", "value": 145000},
+      {"month": "Jan", "value": 125000}
+    ],
+    "returnsHistory": [
+      {"month": "Aug", "value": 0},
+      {"month": "Sep", "value": 250},
+      {"month": "Oct", "value": 560},
+      {"month": "Nov", "value": 1180},
+      {"month": "Dec", "value": 1850},
+      {"month": "Jan", "value": 2520}
+    ]
+  }
+}
