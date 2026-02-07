@@ -1,0 +1,62 @@
+{
+  "borrowerRequests": [
+    {
+      "id": "req-1",
+      "borrowerId": "borrower-1",
+      "borrowerName": "TechFin Holdings Ltd",
+      "country": "Singapore",
+      "industry": "Fintech",
+      "requestedAmount": 5000000,
+      "purpose": "Working capital for expansion into Southeast Asian markets",
+      "tenure": "12 months",
+      "status": "Pending",
+      "submittedAt": "2025-01-28",
+      "documents": [
+        {"id": "doc-1", "name": "Financial Statements 2024", "type": "PDF", "status": "Reviewed"},
+        {"id": "doc-2", "name": "Business Plan", "type": "PDF", "status": "Reviewed"},
+        {"id": "doc-3", "name": "Bank Statements", "type": "PDF", "status": "Pending"},
+        {"id": "doc-4", "name": "Legal Documents", "type": "PDF", "status": "Approved"}
+      ],
+      "underwritingScore": 85,
+      "riskLevel": "Low"
+    },
+    {
+      "id": "req-2",
+      "borrowerId": "borrower-2",
+      "borrowerName": "AfriTrade Finance Corp",
+      "country": "Kenya",
+      "industry": "Trade Finance",
+      "requestedAmount": 2000000,
+      "purpose": "Invoice factoring for intra-African trade",
+      "tenure": "6 months",
+      "status": "Pending",
+      "submittedAt": "2025-01-25",
+      "documents": [
+        {"id": "doc-5", "name": "Trade Contracts", "type": "PDF", "status": "Reviewed"},
+        {"id": "doc-6", "name": "Insurance Documents", "type": "PDF", "status": "Approved"},
+        {"id": "doc-7", "name": "Company Registration", "type": "PDF", "status": "Approved"}
+      ],
+      "underwritingScore": 72,
+      "riskLevel": "Medium"
+    },
+    {
+      "id": "req-3",
+      "borrowerId": "borrower-3",
+      "borrowerName": "AgriLatam Finance SA",
+      "country": "Brazil",
+      "industry": "Agriculture",
+      "requestedAmount": 3500000,
+      "purpose": "Seasonal crop financing for soybean farmers",
+      "tenure": "9 months",
+      "status": "Approved",
+      "submittedAt": "2025-01-15",
+      "documents": [
+        {"id": "doc-8", "name": "Farm Ownership Docs", "type": "PDF", "status": "Approved"},
+        {"id": "doc-9", "name": "Crop Insurance", "type": "PDF", "status": "Approved"},
+        {"id": "doc-10", "name": "Financial Projections", "type": "PDF", "status": "Approved"}
+      ],
+      "underwritingScore": 78,
+      "riskLevel": "Medium"
+    }
+  ]
+}

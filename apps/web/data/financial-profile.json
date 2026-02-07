@@ -1,0 +1,34 @@
+{
+  "input": {
+    "financial_profile": [
+      {"Attribute": "Years in Business", "value": 3},
+      {"Attribute": "Ownership (Parent Company or Investors) Support", "value": 3},
+      {"Attribute": "Strategy - Definition/Realism", "value": 3},
+      {"Attribute": "Founders' & Management Experience", "value": 3},
+      {"Attribute": "Franchise Footprint", "value": 3},
+      {"Attribute": "Competitive Edge (USP)", "value": 3},
+      {"Attribute": "Income Diversity", "value": 3},
+      {"Attribute": "Revenue/Income Stability", "value": 3},
+      {"Attribute": "Gross Margin", "value": 100.0},
+      {"Attribute": "EBITDA Margin", "value": 61.59},
+      {"Attribute": "Net Debt/EBITDA", "value": 0.5751},
+      {"Attribute": "FOCF Conversion Rate", "value": 79.18},
+      {"Attribute": "Interest Coverage Ratio (ICR)", "value": 25.47},
+      {"Attribute": "Ability to raise External Capital", "value": 3},
+      {"Attribute": "Debt-to-Equity (D/E) Ratio", "value": 2.91},
+      {"Attribute": "Operating Cash Flow Ratio", "value": 0.77},
+      {"Attribute": "Runway", "value": 24.0},
+      {"Attribute": "Independent Board & Investor Oversight", "value": 3},
+      {"Attribute": "Regulatory Compliance (Fair Practices)", "value": 3},
+      {"Attribute": "Credit Risk Management", "value": 3},
+      {"Attribute": "Liquidity Risk Management", "value": 2.5},
+      {"Attribute": "Cybersecurity & Custody/Blockchain or Smart contracts", "value": 3},
+      {"Attribute": "FX Sensitivity Result/Equity/Hedging", "value": 2.5},
+      {"Attribute": "Legal & Operational Frameworks", "value": 3},
+      {"Attribute": "Political Stability", "value": 7.494},
+      {"Attribute": "Sovereign & Banking System Stability", "value": 3},
+      {"Attribute": "Regulatory & Policy Risks", "value": 3},
+      {"Attribute": "Fintech Adoption & Scalability", "value": 3}
+    ]
+  }
+}

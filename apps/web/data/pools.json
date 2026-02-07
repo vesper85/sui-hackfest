@@ -1,0 +1,173 @@
+{
+  "pools": [
+    {
+      "id": "pool-1",
+      "name": "TechFin Growth Fund",
+      "description": "High-yield lending pool focused on emerging market fintech companies with strong growth potential.",
+      "logo": "/logos/techfin.svg",
+      "headerImage": "/headers/techfin-header.jpg",
+      "poolSize": 5000000,
+      "tvl": 3200000,
+      "apy": 12.5,
+      "tenure": "12 months",
+      "poolType": "Senior",
+      "minInvestment": 1000,
+      "score": 85,
+      "lockupPeriod": "90 days",
+      "repaymentFrequency": "Monthly",
+      "redeemRate": 0.98,
+      "performanceFee": 2.0,
+      "status": "Active",
+      "highlights": [
+        "Diversified portfolio across 15+ fintech companies",
+        "Strong collateral backing with 150% over-collateralization",
+        "Monthly interest payments with flexible redemption",
+        "Regulated entities in tier-1 jurisdictions"
+      ],
+      "structure": {
+        "seniorTranche": 70,
+        "juniorTranche": 20,
+        "mezzanineTranche": 10
+      },
+      "underwriters": [
+        {"id": "uw-1", "name": "Vesper Rating Agency", "logo": "/logos/vesper.svg", "rating": "A+"},
+        {"id": "uw-2", "name": "CryptoScore", "logo": "/logos/cryptoscore.svg", "rating": "AA-"}
+      ],
+      "assets": [
+        {"id": "asset-1", "name": "PayFast Nigeria", "type": "Term Loan", "value": 500000, "maturity": "2025-06-15"},
+        {"id": "asset-2", "name": "CashGo Kenya", "type": "Revolving Credit", "value": 350000, "maturity": "2025-03-20"},
+        {"id": "asset-3", "name": "LendNow India", "type": "Term Loan", "value": 750000, "maturity": "2025-09-01"}
+      ],
+      "repayments": [
+        {"id": "rep-1", "date": "2025-02-15", "principal": 100000, "interest": 12500, "status": "Paid"},
+        {"id": "rep-2", "date": "2025-03-15", "principal": 100000, "interest": 11875, "status": "Scheduled"},
+        {"id": "rep-3", "date": "2025-04-15", "principal": 100000, "interest": 11250, "status": "Scheduled"},
+        {"id": "rep-4", "date": "2025-05-15", "principal": 100000, "interest": 10625, "status": "Scheduled"},
+        {"id": "rep-5", "date": "2025-06-15", "principal": 100000, "interest": 10000, "status": "Scheduled"},
+        {"id": "rep-6", "date": "2025-07-15", "principal": 100000, "interest": 9375, "status": "Scheduled"}
+      ],
+      "activity": [
+        {"id": "act-1", "type": "Investment", "amount": 50000, "investor": "0x1234...5678", "date": "2025-01-20", "txHash": "0xabc...def"},
+        {"id": "act-2", "type": "Investment", "amount": 25000, "investor": "0x8765...4321", "date": "2025-01-18", "txHash": "0xdef...abc"},
+        {"id": "act-3", "type": "Redemption", "amount": 10000, "investor": "0x9999...1111", "date": "2025-01-15", "txHash": "0x111...999"}
+      ],
+      "borrower": {
+        "id": "borrower-1",
+        "name": "TechFin Holdings Ltd",
+        "logo": "/logos/techfin.svg",
+        "country": "Singapore",
+        "industry": "Fintech",
+        "website": "https://techfin.io"
+      }
+    },
+    {
+      "id": "pool-2",
+      "name": "African Trade Finance",
+      "description": "Short-term trade finance pool supporting intra-African commerce with invoice factoring.",
+      "logo": "/logos/afritrack.svg",
+      "headerImage": "/headers/africa-header.jpg",
+      "poolSize": 2000000,
+      "tvl": 1850000,
+      "apy": 18.2,
+      "tenure": "6 months",
+      "poolType": "Junior",
+      "minInvestment": 500,
+      "score": 72,
+      "lockupPeriod": "30 days",
+      "repaymentFrequency": "Weekly",
+      "redeemRate": 0.95,
+      "performanceFee": 3.0,
+      "status": "Active",
+      "highlights": [
+        "Focus on verified trade transactions",
+        "Short duration for higher liquidity",
+        "Backed by trade invoices and cargo insurance",
+        "Strong track record with 0% default rate"
+      ],
+      "structure": {
+        "seniorTranche": 50,
+        "juniorTranche": 35,
+        "mezzanineTranche": 15
+      },
+      "underwriters": [
+        {"id": "uw-3", "name": "AfriRating", "logo": "/logos/afrirating.svg", "rating": "BBB+"}
+      ],
+      "assets": [
+        {"id": "asset-4", "name": "Cocoa Export Nigeria-Ghana", "type": "Invoice Factoring", "value": 200000, "maturity": "2025-02-28"},
+        {"id": "asset-5", "name": "Textile Import Kenya", "type": "Trade Finance", "value": 150000, "maturity": "2025-03-10"}
+      ],
+      "repayments": [
+        {"id": "rep-7", "date": "2025-02-07", "principal": 50000, "interest": 3640, "status": "Scheduled"},
+        {"id": "rep-8", "date": "2025-02-14", "principal": 50000, "interest": 3500, "status": "Scheduled"}
+      ],
+      "activity": [
+        {"id": "act-4", "type": "Investment", "amount": 15000, "investor": "0xaaaa...bbbb", "date": "2025-01-22", "txHash": "0x222...333"}
+      ],
+      "borrower": {
+        "id": "borrower-2",
+        "name": "AfriTrade Finance Corp",
+        "logo": "/logos/afritrack.svg",
+        "country": "Kenya",
+        "industry": "Trade Finance",
+        "website": "https://afritrade.finance"
+      }
+    },
+    {
+      "id": "pool-3",
+      "name": "LATAM Agricultural Credits",
+      "description": "Agricultural lending pool focused on Latin American farmers with seasonal crop financing.",
+      "logo": "/logos/agrilatam.svg",
+      "headerImage": "/headers/latam-header.jpg",
+      "poolSize": 3500000,
+      "tvl": 2100000,
+      "apy": 15.8,
+      "tenure": "9 months",
+      "poolType": "Mezzanine",
+      "minInvestment": 2500,
+      "score": 78,
+      "lockupPeriod": "60 days",
+      "repaymentFrequency": "Quarterly",
+      "redeemRate": 0.97,
+      "performanceFee": 2.5,
+      "status": "Active",
+      "highlights": [
+        "Seasonal financing aligned with harvest cycles",
+        "Crop insurance as additional collateral",
+        "Government subsidies reduce borrower risk",
+        "Direct impact on rural communities"
+      ],
+      "structure": {
+        "seniorTranche": 60,
+        "juniorTranche": 25,
+        "mezzanineTranche": 15
+      },
+      "underwriters": [
+        {"id": "uw-4", "name": "LatAm Credit Rating", "logo": "/logos/latam-rating.svg", "rating": "A-"}
+      ],
+      "assets": [
+        {"id": "asset-6", "name": "Soybean Farms Brazil", "type": "Seasonal Loan", "value": 800000, "maturity": "2025-08-30"},
+        {"id": "asset-7", "name": "Coffee Cooperative Colombia", "type": "Working Capital", "value": 450000, "maturity": "2025-07-15"}
+      ],
+      "repayments": [
+        {"id": "rep-9", "date": "2025-04-01", "principal": 200000, "interest": 31600, "status": "Scheduled"},
+        {"id": "rep-10", "date": "2025-07-01", "principal": 200000, "interest": 23700, "status": "Scheduled"}
+      ],
+      "activity": [
+        {"id": "act-5", "type": "Investment", "amount": 100000, "investor": "0xcccc...dddd", "date": "2025-01-10", "txHash": "0x444...555"}
+      ],
+      "borrower": {
+        "id": "borrower-3",
+        "name": "AgriLatam Finance SA",
+        "logo": "/logos/agrilatam.svg",
+        "country": "Brazil",
+        "industry": "Agriculture",
+        "website": "https://agrilatam.com"
+      }
+    }
+  ],
+  "stats": {
+    "totalLoanVolume": 10500000,
+    "activeLoans": 24,
+    "totalInterestEarned": 892500
+  }
+}
