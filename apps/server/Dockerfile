@@ -9,7 +9,7 @@ RUN bun install
 COPY . .
 
 # Expose port
-EXPOSE 3000
+EXPOSE 8001
 
 # Default command
 CMD ["bun", "run", "src/index.ts"]

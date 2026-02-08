@@ -4,14 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useWallet } from "@/contexts/wallet-context";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Wallet, LayoutDashboard, Users, Shield, ChevronDown } from "lucide-react";
+import { CustomConnectButton } from "@/components/wallet/custom-connect-button";
+import { LayoutDashboard, Users, Shield } from "lucide-react";
 
 const navItems = [
     { href: "/investor", label: "Investor", icon: LayoutDashboard },
@@ -21,7 +15,7 @@ const navItems = [
 
 export function Navigation() {
     const pathname = usePathname();
-    const { wallet, connect, disconnect } = useWallet();
+
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -55,34 +49,7 @@ export function Navigation() {
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
-                    {wallet.isConnected ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="gap-2">
-                                    <Wallet className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{wallet.address}</span>
-                                    <span className="sm:hidden">Connected</span>
-                                    <ChevronDown className="h-3 w-3" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem className="flex flex-col items-start gap-1">
-                                    <span className="text-xs text-muted-foreground">Balance</span>
-                                    <span className="font-medium">
-                                        ${wallet.balance?.toLocaleString()} USDC
-                                    </span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={disconnect} className="text-red-500">
-                                    Disconnect
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : (
-                        <Button onClick={connect} className="gap-2">
-                            <Wallet className="h-4 w-4" />
-                            Connect Wallet
-                        </Button>
-                    )}
+                    <CustomConnectButton />
                 </div>
             </div>
         </header>

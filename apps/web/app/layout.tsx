@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { WalletProvider } from "@/contexts/wallet-context";
+import { Providers } from "@/components/providers";
+import "@suiet/wallet-kit/style.css";
 import { Navigation } from "@/components/navigation";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -22,10 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${jetbrainsMono.variable} antialiased`}>
-        <WalletProvider>
+        <Providers>
           <Navigation />
           <main>{children}</main>
-        </WalletProvider>
+        </Providers>
       </body>
     </html>
   );

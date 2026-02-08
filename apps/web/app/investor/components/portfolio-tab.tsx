@@ -6,7 +6,8 @@ import { DataTable } from "@/components/data-table";
 import { LineChart } from "@/components/charts/line-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useWallet } from "@/contexts/wallet-context";
+import { useWallet } from "@suiet/wallet-kit";
+import { CustomConnectButton } from "@/components/wallet/custom-connect-button";
 import type { Portfolio, Investment, Transaction } from "@/types";
 import { Wallet, TrendingUp, DollarSign, Percent } from "lucide-react";
 
@@ -125,7 +126,7 @@ const transactionColumns: ColumnDef<Transaction>[] = [
 ];
 
 export function PortfolioTab({ portfolio, analytics }: PortfolioTabProps) {
-    const { wallet } = useWallet();
+    const { connected } = useWallet();
 
     const formatCurrency = (value: number) => {
         if (value >= 1000000) {
@@ -137,7 +138,7 @@ export function PortfolioTab({ portfolio, analytics }: PortfolioTabProps) {
         return `$${value.toLocaleString()}`;
     };
 
-    if (!wallet.isConnected) {
+    if (!connected) {
         return (
             <Card className="flex flex-col items-center justify-center py-16">
                 <Wallet className="h-16 w-16 text-muted-foreground mb-4" />
@@ -146,6 +147,7 @@ export function PortfolioTab({ portfolio, analytics }: PortfolioTabProps) {
                     Connect your wallet to view your portfolio, investments, and
                     transaction history.
                 </p>
+                <CustomConnectButton />
             </Card>
         );
     }

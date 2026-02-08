@@ -4,10 +4,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { useWallet } from "@/contexts/wallet-context";
+import { CustomConnectButton } from "@/components/wallet/custom-connect-button";
 import {
     Upload,
     FileText,
@@ -19,6 +17,7 @@ import {
     DollarSign,
     Calendar,
 } from "lucide-react";
+import { useWallet } from "@suiet/wallet-kit";
 
 const documentTypes = [
     { id: "financial", name: "Financial Statements", required: true },
@@ -30,7 +29,7 @@ const documentTypes = [
 ];
 
 export default function BorrowerPage() {
-    const { wallet, connect } = useWallet();
+    const { connected } = useWallet();
     const [uploadedDocs, setUploadedDocs] = useState<Record<string, boolean>>({});
     const [requestAmount, setRequestAmount] = useState("");
     const [tenure, setTenure] = useState("12");
@@ -44,7 +43,7 @@ export default function BorrowerPage() {
         setUploadedDocs((prev) => ({ ...prev, [docId]: true }));
     };
 
-    if (!wallet.isConnected) {
+    if (!connected) {
         return (
             <div className="mx-auto max-w-7xl py-8 px-4 lg:px-8">
                 <div className="max-w-2xl mx-auto">
@@ -54,10 +53,7 @@ export default function BorrowerPage() {
                         <p className="text-muted-foreground text-center max-w-md mb-6">
                             Connect your wallet to submit a loan request and access the borrower dashboard.
                         </p>
-                        <Button onClick={connect} className="gap-2">
-                            <Wallet className="h-4 w-4" />
-                            Connect Wallet
-                        </Button>
+                        <CustomConnectButton />
                     </Card>
                 </div>
             </div>

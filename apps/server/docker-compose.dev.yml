@@ -4,19 +4,13 @@ services:
   backend:
     build: .
     ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:password@db:5432/postgres
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - PORT=3000
-      - START_WORKERS=false
+      - "8001:8001"
     env_file:
-      - .env
+      - .env.dev
     depends_on:
       - db
       - redis
+      - minio
     develop:
       watch:
         - action: sync
@@ -29,28 +23,24 @@ services:
   worker:
     build: .
     command: bun run src/queue/worker.ts
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:password@db:5432/postgres
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
     env_file:
-      - .env
+      - .env.dev
     depends_on:
       - db
       - redis
+      - minio
     restart: unless-stopped
 
   db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=sui_hackfest_db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - sui_hackfest_db_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   redis:
@@ -75,6 +65,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  sui_hackfest_db_data:
   redis_data:
   minio_data:

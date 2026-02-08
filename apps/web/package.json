@@ -11,7 +11,9 @@
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@mysten/sui": "^2.3.1",
     "@repo/ui": "*",
+    "@suiet/wallet-kit": "^0.5.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-table": "^8.21.3",
     "autoprefixer": "^10.4.24",

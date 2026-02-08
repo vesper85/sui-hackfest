@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { useWallet } from "@/contexts/wallet-context";
+import { useWallet } from "@suiet/wallet-kit";
+import { CustomConnectButton } from "@/components/wallet/custom-connect-button";
 import borrowerRequestsData from "@/data/borrower-requests.json";
 import financialProfileData from "@/data/financial-profile.json";
 import {
@@ -170,7 +171,7 @@ function RequestDetailDialog({ request }: { request: BorrowerRequest }) {
 }
 
 export default function AdminPage() {
-    const { wallet, connect } = useWallet();
+    const { connected } = useWallet();
     const requests = borrowerRequestsData.borrowerRequests as BorrowerRequest[];
 
     const pendingRequests = requests.filter((r) => r.status === "Pending");
@@ -249,7 +250,7 @@ export default function AdminPage() {
         },
     ];
 
-    if (!wallet.isConnected) {
+    if (!connected) {
         return (
             <div className="mx-auto max-w-7xl py-8 px-4 lg:px-8">
                 <div className="max-w-2xl mx-auto">
@@ -259,10 +260,7 @@ export default function AdminPage() {
                         <p className="text-muted-foreground text-center max-w-md mb-6">
                             Connect your wallet to access the admin panel.
                         </p>
-                        <Button onClick={connect} className="gap-2">
-                            <Wallet className="h-4 w-4" />
-                            Connect Wallet
-                        </Button>
+                        <CustomConnectButton />
                     </Card>
                 </div>
             </div>

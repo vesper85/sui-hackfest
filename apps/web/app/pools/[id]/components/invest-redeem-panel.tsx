@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useWallet } from "@/contexts/wallet-context";
+import { useWallet } from "@suiet/wallet-kit";
+import { CustomConnectButton } from "@/components/wallet/custom-connect-button";
 import type { Pool } from "@/types";
 import { Wallet, ArrowDownToLine, ArrowUpFromLine, Info } from "lucide-react";
 
@@ -15,7 +16,8 @@ interface InvestRedeemPanelProps {
 }
 
 export function InvestRedeemPanel({ pool }: InvestRedeemPanelProps) {
-    const { wallet, connect } = useWallet();
+    const { connected } = useWallet();
+    const balance = 0; // Placeholder as balance fetching requires additional logic/hooks
     const [investAmount, setInvestAmount] = useState("");
     const [redeemAmount, setRedeemAmount] = useState("");
 
@@ -29,7 +31,7 @@ export function InvestRedeemPanel({ pool }: InvestRedeemPanelProps) {
         return `$${value.toLocaleString()}`;
     };
 
-    if (!wallet.isConnected) {
+    if (!connected) {
         return (
             <Card className="sticky top-24">
                 <CardContent className="pt-6">
@@ -41,10 +43,7 @@ export function InvestRedeemPanel({ pool }: InvestRedeemPanelProps) {
                         <p className="text-sm text-muted-foreground text-center mb-6">
                             Connect your wallet to invest or redeem from this pool.
                         </p>
-                        <Button onClick={connect} className="w-full gap-2">
-                            <Wallet className="h-4 w-4" />
-                            Connect Wallet
-                        </Button>
+                        <CustomConnectButton />
                     </div>
                 </CardContent>
             </Card>
@@ -73,7 +72,7 @@ export function InvestRedeemPanel({ pool }: InvestRedeemPanelProps) {
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Amount to Invest</span>
                                 <span className="text-muted-foreground">
-                                    Balance: ${wallet.balance?.toLocaleString()} USDC
+                                    Balance: ${balance.toLocaleString()} USDC
                                 </span>
                             </div>
                             <div className="relative">
@@ -88,7 +87,7 @@ export function InvestRedeemPanel({ pool }: InvestRedeemPanelProps) {
                                     variant="ghost"
                                     size="sm"
                                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7"
-                                    onClick={() => setInvestAmount(wallet.balance?.toString() || "")}
+                                    onClick={() => setInvestAmount(balance.toString() || "")}
                                 >
                                     MAX
                                 </Button>
