@@ -25,7 +25,7 @@ module contracts::whitelist_operator {
         is_senior_investor: bool,
     }
 
-    public struct WhitelistOperator has key {
+    public struct WhitelistOperator has key, store {
         id: UID,
         member_list: address,
         state: u8,

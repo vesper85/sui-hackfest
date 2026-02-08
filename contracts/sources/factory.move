@@ -2,16 +2,16 @@ module contracts::pool_factory {
     use sui::table::{Self, Table};
     use sui::event;
     use sui::clock::Clock;
-    use sui::coin::{Self, TreasuryCap, Coin};
-    use sui::sui::SUI;
     use contracts::nft_nisarg::{Self, NFTNisarg, AdminCap as NftAdminCap, Config as NftConfig};
     use contracts::tranche_pool::{Self, TranchePool, TrancheAdminCap};
     use contracts::loan::{Self, Loan, LoanAdminCap};
-    use contracts::whitelist_operator::{Self, WhitelistOperator, OperatorAdminCap};
-    use contracts::token::TOKEN;
+    use contracts::whitelist_operator::{Self, OperatorAdminCap};
 
     const ERR_POOL_EXISTS: u64 = 1;
     const ERR_POOL_NOT_FOUND: u64 = 2;
+    const ERR_TRANCHE_TOTAL_MISMATCH: u64 = 3;
+    const ERR_FUNDED_PRINCIPAL_MISMATCH: u64 = 4;
+    const ERR_BORROWER_MISMATCH: u64 = 5;
 
     public struct FactoryConfig has key {
         id: UID,
@@ -110,6 +110,7 @@ module contracts::pool_factory {
         ctx: &mut TxContext,
     ) {
         assert!(!factory.pools.contains(pool_id), ERR_POOL_EXISTS);
+        assert!(junior_ceiling + senior_ceiling == principal_amount, ERR_TRANCHE_TOTAL_MISMATCH);
 
         // 1. Create NFT with principal amount for the borrower
         let nft = nft_nisarg::create_nft_for_pool(
@@ -196,10 +197,10 @@ module contracts::pool_factory {
 
         // 7. Transfer NFT to borrower, share all pool objects
         transfer::public_transfer(nft, borrower_address);
-        transfer::share_object(junior_pool);
-        transfer::share_object(senior_pool);
-        transfer::share_object(loan);
-        transfer::share_object(operator);
+        transfer::public_share_object(junior_pool);
+        transfer::public_share_object(senior_pool);
+        transfer::public_share_object(loan);
+        transfer::public_share_object(operator);
     }
 
     /// Funds a loan from junior and senior tranche pools, then starts the loan.
@@ -213,14 +214,18 @@ module contracts::pool_factory {
         senior_pool: &mut TranchePool,
         loan: &mut Loan,
         nft: &NFTNisarg,
-        borrower: address,
-        principal_amount: u64,
         junior_amount: u64,
         senior_amount: u64,
         require_origination_fee: bool,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
+        let borrower = loan::get_borrower(loan);
+        let nft_principal = nft_nisarg::loan_principal_amount(nft);
+        let total_funded = junior_amount + senior_amount;
+        assert!(total_funded == nft_principal, ERR_FUNDED_PRINCIPAL_MISMATCH);
+        assert!(nft_nisarg::check_nft_owner(nft, borrower), ERR_BORROWER_MISMATCH);
+
         // Borrow from junior pool
         let mut funding = tranche_pool::borrow_coin(
             tranche_admin, junior_pool, junior_amount, ctx,
@@ -245,7 +250,7 @@ module contracts::pool_factory {
             loan,
             nft,
             borrower,
-            (principal_amount as u256),
+            (nft_principal as u256),
             require_origination_fee,
             clock,
             ctx,
@@ -255,7 +260,7 @@ module contracts::pool_factory {
             pool_id,
             junior_amount,
             senior_amount,
-            total_funded: junior_amount + senior_amount,
+            total_funded,
         });
     }
 

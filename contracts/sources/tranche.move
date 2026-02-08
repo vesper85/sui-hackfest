@@ -9,7 +9,7 @@ module contracts::tranche_pool {
     const ERR_INSUFFICIENT_BALANCE: u64 = 3;
     const ERR_ZERO_AMOUNT: u64 = 4;
 
-    public struct TranchePool has key {
+    public struct TranchePool has key, store {
         id: UID,
         currency_balance: Balance<SUI>,
         borrowed: u64,
