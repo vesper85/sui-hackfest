@@ -262,3 +262,27 @@ sui client dynamic-field <PARENT_ID> <NAME> <TYPE>
 ```text
 https://suiexplorer.com/txblock/<TX_DIGEST>?network=testnet
 ```
+
+## Scripted flow (`contracts/scripts`)
+
+1. Copy env template:
+```bash
+cp scripts/env.example.sh scripts/env.sh
+```
+2. Fill object IDs/addresses in `scripts/env.sh`.
+3. Run in order (switch wallet where needed):
+```bash
+# Optional manual NFT minter flow
+./scripts/01_request_mint_approval.sh
+./scripts/02_approve_minter.sh <MINTER_ADDRESS>
+./scripts/03_mint_nft.sh
+
+# Pool + lending flow
+./scripts/04_create_pool.sh 1 1000000000 400000000 600000000
+./scripts/05_whitelist_investor.sh <INVESTOR_ADDRESS> junior
+./scripts/05_whitelist_investor.sh <INVESTOR_ADDRESS> senior
+./scripts/06_invest_supply.sh 200000000
+./scripts/07_fund_and_start_loan.sh 400000000 600000000 false
+./scripts/08_withdraw.sh 300000000
+./scripts/09_repay.sh 50000000
+```
