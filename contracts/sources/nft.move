@@ -282,6 +282,54 @@ module contracts::nft_nisarg {
         });
     }
 
+    public fun create_nft_for_pool(
+        _admin: &AdminCap,
+        config: &mut Config,
+        name: String,
+        nft_description: String,
+        principal_amount: u64,
+        owner: address,
+        ctx: &mut TxContext,
+    ): NFTNisarg {
+        config.number = config.number + 1;
+
+        let nft = NFTNisarg {
+            id: object::new(ctx),
+            prob_of_default: 0,
+            loss_given_default: 0,
+            risk_score: 0,
+            exposure_at_default: 0,
+            underwritten: false,
+            name,
+            description: nft_description,
+            portfolio_id: b"".to_string(),
+            no_of_loans: 1,
+            total_principal_amount: principal_amount,
+            average_interest_rate: 0,
+            portfolio_term: b"".to_string(),
+            portfolio_status: b"active".to_string(),
+            maturity_date: b"".to_string(),
+            image_url: b"https://example.fi/nft".to_string(),
+            owner,
+        };
+
+        let token_id = object::id(&nft);
+
+        if (!config.nft_count_by_user.contains(owner)) {
+            config.nft_count_by_user.add(owner, vector::empty<ID>());
+        };
+        let user_nfts = config.nft_count_by_user.borrow_mut(owner);
+        user_nfts.push_back(token_id);
+
+        event::emit(NFTMintedEvent {
+            token_id,
+            name: nft.name,
+            owner,
+        });
+
+        nft
+    }
+
     public fun is_approved_minter(approved_minters: &ApprovedMinters, addr: address): bool {
         approved_minters.minters.contains(&addr)
     }

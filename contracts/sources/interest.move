@@ -27,6 +27,12 @@ module contracts::interest {
         }
     }
 
+    public fun get_amortized_interest(principal: u256, annual_rate_bps: u256): u256 {
+        let one = math::get_one();
+        let normalized_rate = math::safe_div(math::safe_mul(annual_rate_bps, one), 10000);
+        math::rmul(principal, normalized_rate)
+    }
+
     public fun charge_interest_internal(
         principal: u256,
         annual_rate_bps: u256,

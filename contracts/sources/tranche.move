@@ -151,6 +151,22 @@ module contracts::tranche_pool {
         event::emit(BorrowEvent { recipient, amount });
     }
 
+    public fun borrow_coin(
+        _admin: &TrancheAdminCap,
+        pool: &mut TranchePool,
+        amount: u64,
+        ctx: &mut TxContext,
+    ): Coin<SUI> {
+        assert!(balance::value(&pool.currency_balance) >= amount, ERR_INSUFFICIENT_BALANCE);
+
+        let withdrawn = coin::take(&mut pool.currency_balance, amount, ctx);
+        pool.borrowed = pool.borrowed + amount;
+        pool.principal = pool.principal + amount;
+
+        event::emit(BorrowEvent { recipient: ctx.sender(), amount });
+        withdrawn
+    }
+
     public entry fun auth_transfer(
         _admin: &TrancheAdminCap,
         pool: &mut TranchePool,
