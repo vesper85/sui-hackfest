@@ -13,8 +13,15 @@ import {
   FileText,
   RefreshCcw,
   Upload,
+  Coins,
+  Shield,
+  FileCheck,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useUserStore } from "@/store/user-store";
+import { useContract, type TransactionResult } from "@/hooks/useContract";
 
 const documentTypes = [
   { id: "bank_statement", name: "Bank Statement", required: true },
@@ -115,11 +122,31 @@ type BorrowerLoan = {
   }>;
 };
 
+type BorrowerNft = {
+  id: string;
+  name: string;
+  description: string;
+  portfolioId: string;
+  principalAmount: string;
+  status: string;
+  objectId: string | null;
+  mintedAt: string | null;
+  txHash: string | null;
+  underwriting: {
+    probOfDefault: string;
+    lossGivenDefault: string;
+    riskScore: number;
+    exposureAtDefault: string;
+    underwritten: boolean;
+  };
+};
+
 export function BorrowerFlow() {
   const apiBase =
     process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
   const { onboardingData, walletAddress } = useUserStore();
   const borrowerType = onboardingData?.borrowerType ?? "individual";
+  const contract = useContract();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -134,6 +161,17 @@ export function BorrowerFlow() {
   const [report, setReport] = useState<UnderwritingReport | null>(null);
   const [loans, setLoans] = useState<BorrowerLoan[]>([]);
   const [loansLoading, setLoansLoading] = useState(false);
+  const [nfts, setNfts] = useState<BorrowerNft[]>([]);
+  const [nftsLoading, setNftsLoading] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >({
+    submission: true,
+    documents: true,
+    report: true,
+    nfts: true,
+    loans: true,
+  });
   const resumeAttempted = useRef(false);
   const lastWallet = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -147,6 +185,8 @@ export function BorrowerFlow() {
     loadingLoans: false,
     withdrawing: false,
     repaying: false,
+    mintingNft: false,
+    loadingNfts: false,
   });
 
   const requiredCount = documentTypes.filter((doc) => doc.required).length;
@@ -437,6 +477,7 @@ export function BorrowerFlow() {
   useEffect(() => {
     if (!walletAddress) return;
     fetchLoans();
+    fetchNfts();
   }, [walletAddress]);
 
   const finalizeSubmission = async () => {
@@ -540,6 +581,125 @@ export function BorrowerFlow() {
       setLoansLoading(false);
       setBusy((prev) => ({ ...prev, loadingLoans: false }));
     }
+  };
+
+  const fetchNfts = async () => {
+    setError(null);
+    setNftsLoading(true);
+    setBusy((prev) => ({ ...prev, loadingNfts: true }));
+
+    try {
+      const headers = authHeaders();
+      if (!headers) return;
+
+      const response = await fetch(`${apiBase}/borrower/nfts`, {
+        headers: {
+          ...headers,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to load NFTs");
+      }
+
+      const payload = await response.json();
+      setNfts(payload.nfts ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load NFTs");
+    } finally {
+      setNftsLoading(false);
+      setBusy((prev) => ({ ...prev, loadingNfts: false }));
+    }
+  };
+
+  const mintNft = async () => {
+    if (!submission || !walletAddress || !report) {
+      setError("Submission, wallet, and approved report required to mint NFT");
+      return;
+    }
+
+    if (!contract.isConnected) {
+      setError("Please connect your wallet first");
+      return;
+    }
+
+    setError(null);
+    setBusy((prev) => ({ ...prev, mintingNft: true }));
+
+    try {
+      // Prepare NFT mint parameters from report data
+      const principalAmount = Math.round(
+        report.lendingTerms.maxLoanAmount * 1000000,
+      ); // Convert to base units
+      const loanTermDays = report.lendingTerms.recommendedLoanTermDays;
+      const maturityDate = new Date();
+      maturityDate.setDate(maturityDate.getDate() + loanTermDays);
+
+      const maturityDateStr = maturityDate.toISOString().split("T")[0];
+      const mintParams = {
+        name: `Collateral NFT - ${submission.reference}`,
+        description: `Tokenized collateral for loan portfolio`,
+        portfolioId: `PF-${submission.reference}`,
+        noOfLoans: 1,
+        totalPrincipalAmount: principalAmount,
+        averageInterestRate: report.lendingTerms.recommendedInterestRate,
+        portfolioTerm: `${loanTermDays} days`,
+        portfolioStatus: "active",
+        maturityDate:
+          maturityDateStr || new Date().toISOString().split("T")[0]!,
+      };
+
+      // Call contract to mint NFT (client-side)
+      const result = await contract.mintNft(mintParams);
+
+      if (result.status === "error") {
+        throw new Error(result.error || "Failed to mint NFT");
+      }
+
+      if (result.status === "success" && result.objectId && result.digest) {
+        // Register the minted NFT with the backend
+        const headers = authHeaders();
+        if (!headers) return;
+
+        const registerResponse = await fetch(
+          `${apiBase}/borrower/nfts/register`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...headers,
+            },
+            body: JSON.stringify({
+              submissionId: submission.id,
+              walletAddress,
+              contractObjectId: result.objectId,
+              mintTxHash: result.digest,
+              ...mintParams,
+            }),
+          },
+        );
+
+        if (!registerResponse.ok) {
+          console.warn(
+            "NFT minted on-chain but failed to register with backend",
+          );
+        }
+
+        // Refresh NFTs list
+        await fetchNfts();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to mint NFT");
+    } finally {
+      setBusy((prev) => ({ ...prev, mintingNft: false }));
+    }
+  };
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
   };
 
   const withdrawFunds = async (loanId: string) => {
@@ -917,6 +1077,116 @@ export function BorrowerFlow() {
           </CardContent>
         </Card>
 
+        {/* NFT Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Coins className="h-4 w-4" />
+                Collateral NFTs
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchNfts}
+                  disabled={busy.loadingNfts}
+                >
+                  {busy.loadingNfts ? "Loading..." : "Refresh"}
+                </Button>
+                {report?.status === "approved" && nfts.length === 0 && (
+                  <Button
+                    size="sm"
+                    onClick={mintNft}
+                    disabled={busy.mintingNft || !submission}
+                  >
+                    {busy.mintingNft ? "Minting..." : "Mint NFT"}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {nftsLoading ? (
+              <div className="text-sm text-muted-foreground">
+                Loading NFTs...
+              </div>
+            ) : nfts.length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                No NFTs minted yet.
+                {report?.status === "approved"
+                  ? "Click 'Mint NFT' to tokenize your collateral after approval."
+                  : "NFT minting available after underwriting approval."}
+              </div>
+            ) : (
+              nfts.map((nft) => (
+                <div
+                  key={nft.id}
+                  className="rounded-md border border-border/60 p-4 space-y-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-primary" />
+                      <div className="text-sm font-medium">{nft.name}</div>
+                    </div>
+                    <Badge
+                      variant={
+                        nft.status === "minted" ? "default" : "secondary"
+                      }
+                    >
+                      {nft.status}
+                    </Badge>
+                  </div>
+
+                  <div className="grid gap-2 text-sm md:grid-cols-2">
+                    <div>Portfolio ID: {nft.portfolioId}</div>
+                    <div>
+                      Principal: $
+                      {parseFloat(nft.principalAmount).toLocaleString()}
+                    </div>
+                    <div>Risk Score: {nft.underwriting.riskScore}/100</div>
+                    <div>
+                      Default Prob:{" "}
+                      {(
+                        parseFloat(nft.underwriting.probOfDefault) * 100
+                      ).toFixed(1)}
+                      %
+                    </div>
+                  </div>
+
+                  {nft.objectId && (
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <span>Object ID:</span>
+                      <a
+                        href={`https://explorer.sui.io/object/${nft.objectId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center gap-1"
+                      >
+                        {nft.objectId.slice(0, 16)}...
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
+
+                  {nft.txHash && (
+                    <div className="text-xs text-muted-foreground">
+                      TX: {nft.txHash.slice(0, 20)}...
+                    </div>
+                  )}
+
+                  {nft.mintedAt && (
+                    <div className="text-xs text-muted-foreground">
+                      Minted: {new Date(nft.mintedAt).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Loans & Pools Section */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,12 +37,14 @@ export function Navigation() {
       <div className="mx-auto max-w-7xl flex h-16 items-center justify-between px-4 lg:px-8">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">
-                V
-              </span>
-            </div>
-            <span className="font-bold text-xl">Vesper</span>
+            <Image
+              src="/projectLogo.jpeg"
+              alt="currentZK Logo"
+              width={32}
+              height={32}
+              className="rounded"
+            />
+            <span className="font-bold text-xl">currentZK</span>
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             {visibleItems.map((item) => {

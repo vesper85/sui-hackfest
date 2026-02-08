@@ -313,6 +313,43 @@ export const lendingPools = pgTable("lending_pools", {
   // On-chain Data
   contractAddress: varchar("contract_address", { length: 255 }),
   chainId: varchar("chain_id", { length: 50 }),
+  deploymentTxHash: varchar("deployment_tx_hash", { length: 255 }),
+
+  // Borrower Link
+  borrowerId: uuid("borrower_id").references(() => borrowerProfiles.id),
+
+  // Contract Pool ID (sequential from factory)
+  contractPoolId: integer("contract_pool_id"),
+
+  // Tranche Configuration
+  juniorCeiling: decimal("junior_ceiling", { precision: 20, scale: 2 }),
+  seniorCeiling: decimal("senior_ceiling", { precision: 20, scale: 2 }),
+
+  // Loan Parameters
+  periodLengthSeconds: integer("period_length_seconds"),
+  periodCount: integer("period_count"),
+  gracePeriodSeconds: integer("grace_period_seconds"),
+  lateFeeInterestPerSecond: decimal("late_fee_interest_per_second", {
+    precision: 30,
+    scale: 10,
+  }),
+  isBulletRepay: boolean("is_bullet_repay").default(false),
+  performanceFeeBps: integer("performance_fee_bps"),
+  originatorFeeBps: integer("originator_fee_bps"),
+  pStartFrom: integer("p_start_from"),
+  pRepayFrequency: integer("p_repay_frequency"),
+  capitalFormationPeriod: integer("capital_formation_period"),
+  seniorInterestRate: decimal("senior_interest_rate", {
+    precision: 5,
+    scale: 2,
+  }),
+
+  // On-chain Object IDs
+  nftId: varchar("nft_id", { length: 255 }),
+  loanId: varchar("loan_id", { length: 255 }),
+  juniorPoolId: varchar("junior_pool_id", { length: 255 }),
+  seniorPoolId: varchar("senior_pool_id", { length: 255 }),
+  operatorId: varchar("operator_id", { length: 255 }),
 
   // Pool Metrics
   totalValueLockedUsd: decimal("total_value_locked_usd", {
@@ -524,6 +561,53 @@ export const poolPerformanceSnapshots = pgTable("pool_performance_snapshots", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const borrowerNfts = pgTable("borrower_nfts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowerProfiles.id)
+    .notNull(),
+  submissionId: uuid("submission_id").references(() => documentSubmissions.id),
+
+  // NFT Data
+  nftName: varchar("nft_name", { length: 255 }).notNull(),
+  nftDescription: text("nft_description"),
+  portfolioId: varchar("portfolio_id", { length: 100 }),
+
+  // Loan Terms (from report)
+  principalAmount: decimal("principal_amount", { precision: 20, scale: 2 }),
+  noOfLoans: integer("no_of_loans").default(1),
+  averageInterestRate: decimal("average_interest_rate", {
+    precision: 5,
+    scale: 2,
+  }),
+  portfolioTerm: varchar("portfolio_term", { length: 50 }),
+  portfolioStatus: varchar("portfolio_status", { length: 50 }),
+  maturityDate: timestamp("maturity_date"),
+
+  // On-chain Data
+  contractObjectId: varchar("contract_object_id", { length: 255 }),
+  mintTxHash: varchar("mint_tx_hash", { length: 255 }),
+  ownerAddress: varchar("owner_address", { length: 255 }),
+
+  // Underwriting Data
+  probOfDefault: decimal("prob_of_default", { precision: 5, scale: 2 }),
+  lossGivenDefault: decimal("loss_given_default", { precision: 5, scale: 2 }),
+  riskScore: integer("risk_score"),
+  exposureAtDefault: decimal("exposure_at_default", {
+    precision: 20,
+    scale: 2,
+  }),
+  underwritten: boolean("underwritten").default(false),
+
+  // Status
+  mintStatus: varchar("mint_status", { length: 50 })
+    .default("pending")
+    .notNull(),
+  mintedAt: timestamp("minted_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const llmApiLogs = pgTable("llm_api_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
   requestTimestamp: timestamp("request_timestamp").defaultNow().notNull(),
@@ -560,6 +644,8 @@ export const borrowerProfilesRelations = relations(
     collateralAssets: many(collateralAssets),
     underwritingReports: many(underwritingReports),
     loans: many(loans),
+    nfts: many(borrowerNfts),
+    pools: many(lendingPools),
   }),
 );
 
@@ -613,11 +699,29 @@ export const underwritingReportsRelations = relations(
   }),
 );
 
-export const lendingPoolsRelations = relations(lendingPools, ({ many }) => ({
-  loans: many(loans),
-  deposits: many(poolDeposits),
-  withdrawals: many(poolWithdrawals),
-  performanceSnapshots: many(poolPerformanceSnapshots),
+export const lendingPoolsRelations = relations(
+  lendingPools,
+  ({ one, many }) => ({
+    borrower: one(borrowerProfiles, {
+      fields: [lendingPools.borrowerId],
+      references: [borrowerProfiles.id],
+    }),
+    loans: many(loans),
+    deposits: many(poolDeposits),
+    withdrawals: many(poolWithdrawals),
+    performanceSnapshots: many(poolPerformanceSnapshots),
+  }),
+);
+
+export const borrowerNftsRelations = relations(borrowerNfts, ({ one }) => ({
+  borrower: one(borrowerProfiles, {
+    fields: [borrowerNfts.borrowerId],
+    references: [borrowerProfiles.id],
+  }),
+  submission: one(documentSubmissions, {
+    fields: [borrowerNfts.submissionId],
+    references: [documentSubmissions.id],
+  }),
 }));
 
 export const loansRelations = relations(loans, ({ one, many }) => ({

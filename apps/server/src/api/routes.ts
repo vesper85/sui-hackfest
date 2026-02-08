@@ -28,7 +28,20 @@ import {
   getAnalytics,
   getLenderPositions,
 } from "./admin-handlers";
-import { createSubmissionSchema, applyLoanSchema } from "../types";
+import {
+  getBorrowerNfts,
+  requestMintApproval,
+  mintBorrowerNft,
+  deployPoolOnChain,
+  registerMintedNft,
+} from "./contract-handlers";
+import {
+  createSubmissionSchema,
+  applyLoanSchema,
+  mintNftSchema,
+  deployPoolSchema,
+  registerNftSchema,
+} from "../types";
 import { authNonceSchema, authVerifySchema } from "../types/auth";
 import { onboardingSchema } from "../types/onboarding";
 import { authMiddleware } from "../middleware";
@@ -52,6 +65,7 @@ account.post(
 );
 
 borrower.use("*", authMiddleware);
+
 borrower.post(
   "/submit",
   zValidator("json", createSubmissionSchema),
@@ -75,6 +89,20 @@ borrower.get("/loans", getBorrowerLoans);
 borrower.post("/loan/:loanId/withdraw", withdrawLoanFunds);
 
 borrower.post("/loan/:loanId/repay", repayLoan);
+
+// NFT Routes
+borrower.get("/nfts", getBorrowerNfts);
+
+borrower.post("/nfts/request-approval", requestMintApproval);
+
+borrower.post("/nfts/mint", zValidator("json", mintNftSchema), mintBorrowerNft);
+
+// Register NFT minted on-chain (from frontend)
+borrower.post(
+  "/nfts/register",
+  zValidator("json", registerNftSchema),
+  registerMintedNft,
+);
 
 const lender = new Hono();
 
@@ -117,6 +145,12 @@ admin.post("/report/:reportId/reject", rejectReport);
 admin.post("/report/:reportId/create-pool", createPoolForReport);
 
 admin.post("/pool/:poolId/deploy", deployPool);
+
+admin.post(
+  "/pool/deploy-onchain",
+  zValidator("json", deployPoolSchema),
+  deployPoolOnChain,
+);
 
 admin.get("/analytics", getAnalytics);
 

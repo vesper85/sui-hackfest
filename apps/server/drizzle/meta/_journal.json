@@ -8,6 +8,13 @@
       "when": 1770539032856,
       "tag": "0000_clammy_spencer_smythe",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770564474355,
+      "tag": "0001_ambiguous_scorpion",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactNode } from "react";
 import {
   WalletProvider,
   AllDefaultWallets,
@@ -7,9 +8,12 @@ import {
   SuiTestnetChain,
   SuiMainnetChain,
 } from "@suiet/wallet-kit";
-import { ReactNode } from "react";
 
-export function Providers({ children }: { children: ReactNode }) {
+interface ProvidersProps {
+  children: ReactNode;
+}
+
+export function Providers({ children }: ProvidersProps) {
   return (
     <WalletProvider
       defaultWallets={AllDefaultWallets}

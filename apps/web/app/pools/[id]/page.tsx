@@ -46,27 +46,71 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
           poolType: "Senior",
           minInvestment: 1000,
           score: Math.round((apiPool.metrics?.utilizationRate ?? 0) * 100),
-          lockupPeriod: "30 days",
-          repaymentFrequency: "Bullet",
+          lockupPeriod: apiPool.configuration?.capitalFormationPeriod
+            ? `${Math.round(apiPool.configuration.capitalFormationPeriod / 86400)} days`
+            : "30 days",
+          repaymentFrequency: apiPool.configuration?.isBulletRepay
+            ? "Bullet"
+            : "Monthly",
           redeemRate: 1,
-          performanceFee: 2,
-          status: "Active",
-          borrower: {
-            id: "pool",
-            name: apiPool.poolName,
-            logo: "",
-            country: "Global",
-            industry: "",
-            website: "",
-            documents: [],
-            financialProfile: [],
-            status: "Approved",
-            requestDate: "",
+          performanceFee: apiPool.configuration?.performanceFeeBps
+            ? apiPool.configuration.performanceFeeBps / 100
+            : 2,
+          status: apiPool.poolStatus || "Active",
+          borrower: apiPool.borrower
+            ? {
+                id: apiPool.borrower.borrowerId,
+                name:
+                  apiPool.borrower.fullName ||
+                  apiPool.borrower.businessName ||
+                  "Unknown",
+                logo: "",
+                country: "Global",
+                industry: apiPool.borrower.borrowerType || "",
+                website: "",
+                documents: [],
+                financialProfile: [],
+                status: "Approved",
+                requestDate: "",
+              }
+            : {
+                id: "pool",
+                name: apiPool.poolName,
+                logo: "",
+                country: "Global",
+                industry: "",
+                website: "",
+                documents: [],
+                financialProfile: [],
+                status: "Approved",
+                requestDate: "",
+              },
+          // Contract information
+          contractInfo: {
+            contractAddress: apiPool.contractAddress,
+            chainId: apiPool.chainId,
+            contractPoolId: apiPool.contractPoolId,
+            objectIds: apiPool.onChainObjectIds,
+            configuration: apiPool.configuration,
           },
           highlights: [],
           structure: {
-            seniorTranche: 100,
-            juniorTranche: 0,
+            seniorTranche:
+              apiPool.configuration?.seniorCeiling && apiPool.metrics?.tvl
+                ? Math.round(
+                    (apiPool.configuration.seniorCeiling /
+                      apiPool.metrics.tvl) *
+                      100,
+                  )
+                : 80,
+            juniorTranche:
+              apiPool.configuration?.juniorCeiling && apiPool.metrics?.tvl
+                ? Math.round(
+                    (apiPool.configuration.juniorCeiling /
+                      apiPool.metrics.tvl) *
+                      100,
+                  )
+                : 20,
             mezzanineTranche: 0,
           },
           underwriters: [],

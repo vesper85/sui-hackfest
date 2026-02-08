@@ -1,3 +1,35 @@
+export interface PoolConfiguration {
+  juniorCeiling: number | null;
+  seniorCeiling: number | null;
+  periodLengthSeconds: number | null;
+  periodCount: number | null;
+  gracePeriodSeconds: number | null;
+  lateFeeInterestPerSecond: string | null;
+  isBulletRepay: boolean | null;
+  performanceFeeBps: number | null;
+  originatorFeeBps: number | null;
+  pStartFrom: number | null;
+  pRepayFrequency: number | null;
+  capitalFormationPeriod: number | null;
+  seniorInterestRate: number | null;
+}
+
+export interface OnChainObjectIds {
+  nftId: string | null;
+  loanId: string | null;
+  juniorPoolId: string | null;
+  seniorPoolId: string | null;
+  operatorId: string | null;
+}
+
+export interface ContractInfo {
+  contractAddress: string | null;
+  chainId: string | null;
+  contractPoolId: number | null;
+  objectIds: OnChainObjectIds;
+  configuration: PoolConfiguration | null;
+}
+
 export interface Pool {
   id: string;
   name: string;
@@ -17,6 +49,7 @@ export interface Pool {
   performanceFee: number;
   status: "Active" | "Closed" | "Pending";
   borrower: Borrower;
+  contractInfo?: ContractInfo;
   highlights: string[];
   structure: PoolStructure;
   underwriters: Underwriter[];

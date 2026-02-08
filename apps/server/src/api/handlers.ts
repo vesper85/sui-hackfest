@@ -1293,6 +1293,16 @@ export const getPool = async (c: Context) => {
       throw new NotFoundError("Pool not found");
     }
 
+    // Get borrower if linked
+    let borrower = null;
+    if (pool.borrowerId) {
+      const [borrowerProfile] = await db
+        .select()
+        .from(borrowerProfiles)
+        .where(eq(borrowerProfiles.id, pool.borrowerId));
+      borrower = borrowerProfile;
+    }
+
     // Get recent loans
     const recentLoans = await db
       .select()
@@ -1307,6 +1317,48 @@ export const getPool = async (c: Context) => {
         poolType: pool.poolType,
         riskTier: pool.riskTier,
         contractAddress: pool.contractAddress,
+        chainId: pool.chainId,
+        poolStatus: pool.poolStatus,
+
+        // Borrower Info
+        borrower: borrower
+          ? {
+              borrowerId: borrower.id,
+              fullName: borrower.fullName,
+              businessName: borrower.businessName,
+              borrowerType: borrower.borrowerType,
+            }
+          : null,
+
+        // Contract Details
+        contractPoolId: pool.contractPoolId,
+        onChainObjectIds: {
+          nftId: pool.nftId,
+          loanId: pool.loanId,
+          juniorPoolId: pool.juniorPoolId,
+          seniorPoolId: pool.seniorPoolId,
+          operatorId: pool.operatorId,
+        },
+
+        // Pool Configuration
+        configuration: {
+          juniorCeiling: pool.juniorCeiling ? Number(pool.juniorCeiling) : null,
+          seniorCeiling: pool.seniorCeiling ? Number(pool.seniorCeiling) : null,
+          periodLengthSeconds: pool.periodLengthSeconds,
+          periodCount: pool.periodCount,
+          gracePeriodSeconds: pool.gracePeriodSeconds,
+          lateFeeInterestPerSecond: pool.lateFeeInterestPerSecond,
+          isBulletRepay: pool.isBulletRepay,
+          performanceFeeBps: pool.performanceFeeBps,
+          originatorFeeBps: pool.originatorFeeBps,
+          pStartFrom: pool.pStartFrom,
+          pRepayFrequency: pool.pRepayFrequency,
+          capitalFormationPeriod: pool.capitalFormationPeriod,
+          seniorInterestRate: pool.seniorInterestRate
+            ? Number(pool.seniorInterestRate)
+            : null,
+        },
+
         metrics: {
           tvl: Number(pool.totalValueLockedUsd),
           availableLiquidity: Number(pool.availableLiquidityUsd),
