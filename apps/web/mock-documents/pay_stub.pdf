@@ -1,0 +1,17 @@
+Mock Pay Stub
+
+Employee: Jane Doe
+Employer: Example Logistics LLC
+Pay Period: 2024-03-01 to 2024-03-15
+Pay Date: 2024-03-20
+
+Earnings:
+- Regular Hours: 80 @ $35.00 = $2,800.00
+- Bonus: $500.00
+
+Deductions:
+- Federal Tax: $420.00
+- State Tax: $120.00
+- Insurance: $95.00
+
+Net Pay: $2,665.00

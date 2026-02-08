@@ -5,6 +5,7 @@ CREATE TYPE "public"."document_type" AS ENUM('bank_statement', 'tax_return', 'pa
 CREATE TYPE "public"."kyc_status" AS ENUM('pending', 'approved', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."llm_operation_type" AS ENUM('document_extraction', 'risk_scoring', 'report_generation');--> statement-breakpoint
 CREATE TYPE "public"."loan_status" AS ENUM('pending_approval', 'approved', 'funded', 'active', 'repaid', 'defaulted', 'liquidated', 'cancelled');--> statement-breakpoint
+CREATE TYPE "public"."onboarding_status" AS ENUM('pending', 'completed');--> statement-breakpoint
 CREATE TYPE "public"."payment_method" AS ENUM('on_chain', 'off_chain');--> statement-breakpoint
 CREATE TYPE "public"."pool_status" AS ENUM('active', 'paused', 'closed');--> statement-breakpoint
 CREATE TYPE "public"."pool_type" AS ENUM('risk_tiered', 'asset_backed', 'specialized');--> statement-breakpoint
@@ -12,11 +13,11 @@ CREATE TYPE "public"."processing_status" AS ENUM('pending', 'processing', 'compl
 CREATE TYPE "public"."report_status" AS ENUM('draft', 'pending_review', 'approved', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."risk_tier" AS ENUM('AAA', 'AA', 'A', 'BBB', 'BB', 'B', 'C', 'D');--> statement-breakpoint
 CREATE TYPE "public"."submission_status" AS ENUM('pending', 'processing', 'completed', 'failed');--> statement-breakpoint
-CREATE TYPE "public"."user_type" AS ENUM('borrower', 'lender', 'both');--> statement-breakpoint
+CREATE TYPE "public"."user_type" AS ENUM('borrower', 'lender');--> statement-breakpoint
 CREATE TYPE "public"."verification_status" AS ENUM('pending', 'verified', 'rejected');--> statement-breakpoint
 CREATE TABLE "borrower_profiles" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
+	"user_id" integer NOT NULL,
 	"full_name" varchar(255) NOT NULL,
 	"business_name" varchar(255),
 	"borrower_type" "borrower_type" NOT NULL,
@@ -177,7 +178,7 @@ CREATE TABLE "loans" (
 CREATE TABLE "pool_deposits" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"pool_id" uuid NOT NULL,
-	"lender_user_id" uuid NOT NULL,
+	"lender_user_id" integer NOT NULL,
 	"deposit_amount_usd" numeric(20, 2) NOT NULL,
 	"lp_tokens_minted" numeric(20, 8) NOT NULL,
 	"tx_hash" varchar(255) NOT NULL,
@@ -201,7 +202,7 @@ CREATE TABLE "pool_performance_snapshots" (
 CREATE TABLE "pool_withdrawals" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"pool_id" uuid NOT NULL,
-	"lender_user_id" uuid NOT NULL,
+	"lender_user_id" integer NOT NULL,
 	"withdrawal_amount_usd" numeric(20, 2) NOT NULL,
 	"lp_tokens_burned" numeric(20, 8) NOT NULL,
 	"tx_hash" varchar(255) NOT NULL,
@@ -233,20 +234,26 @@ CREATE TABLE "underwriting_reports" (
 	"report_data" jsonb,
 	"flags" jsonb,
 	"generated_at" timestamp DEFAULT now() NOT NULL,
-	"approved_by" uuid,
+	"approved_by" integer,
 	"approved_at" timestamp,
 	"report_s3_key" varchar(512)
 );
 --> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "email" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "users" ALTER COLUMN "created_at" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "wallet_address" varchar(255) NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "user_type" "user_type" DEFAULT 'borrower' NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "kyc_status" "kyc_status" DEFAULT 'pending' NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "kyc_provider_id" varchar(255);--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "updated_at" timestamp DEFAULT now() NOT NULL;--> statement-breakpoint
+CREATE TABLE "users" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"wallet_address" varchar(255) NOT NULL,
+	"email" varchar(255),
+	"user_type" "user_type" DEFAULT 'borrower' NOT NULL,
+	"onboarding_status" "onboarding_status" DEFAULT 'pending' NOT NULL,
+	"onboarding_data" jsonb,
+	"kyc_status" "kyc_status" DEFAULT 'pending' NOT NULL,
+	"kyc_provider_id" varchar(255),
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "users_wallet_address_unique" UNIQUE("wallet_address"),
+	CONSTRAINT "users_email_unique" UNIQUE("email")
+);
+--> statement-breakpoint
 ALTER TABLE "borrower_profiles" ADD CONSTRAINT "borrower_profiles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "collateral_assets" ADD CONSTRAINT "collateral_assets_borrower_id_borrower_profiles_id_fk" FOREIGN KEY ("borrower_id") REFERENCES "public"."borrower_profiles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "collateral_assets" ADD CONSTRAINT "collateral_assets_submission_id_document_submissions_id_fk" FOREIGN KEY ("submission_id") REFERENCES "public"."document_submissions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -264,7 +271,4 @@ ALTER TABLE "pool_withdrawals" ADD CONSTRAINT "pool_withdrawals_pool_id_lending_
 ALTER TABLE "pool_withdrawals" ADD CONSTRAINT "pool_withdrawals_lender_user_id_users_id_fk" FOREIGN KEY ("lender_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "underwriting_reports" ADD CONSTRAINT "underwriting_reports_submission_id_document_submissions_id_fk" FOREIGN KEY ("submission_id") REFERENCES "public"."document_submissions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "underwriting_reports" ADD CONSTRAINT "underwriting_reports_borrower_id_borrower_profiles_id_fk" FOREIGN KEY ("borrower_id") REFERENCES "public"."borrower_profiles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "underwriting_reports" ADD CONSTRAINT "underwriting_reports_approved_by_users_id_fk" FOREIGN KEY ("approved_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "users" DROP COLUMN "name";--> statement-breakpoint
-ALTER TABLE "users" ADD CONSTRAINT "users_wallet_address_unique" UNIQUE("wallet_address");--> statement-breakpoint
-ALTER TABLE "users" ADD CONSTRAINT "users_email_unique" UNIQUE("email");
+ALTER TABLE "underwriting_reports" ADD CONSTRAINT "underwriting_reports_approved_by_users_id_fk" FOREIGN KEY ("approved_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;

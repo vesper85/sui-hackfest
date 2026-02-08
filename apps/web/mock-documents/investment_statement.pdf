@@ -1,0 +1,12 @@
+Mock Investment Statement
+
+Account Holder: Jane Doe
+Broker: Example Capital
+Statement Date: 2024-03-31
+
+Positions:
+- ETF ABC: 120 shares @ $95.20 = $11,424.00
+- Equity XYZ: 80 shares @ $140.10 = $11,208.00
+- Bond Fund DEF: 65 shares @ $102.30 = $6,649.50
+
+Total Market Value: $29,281.50

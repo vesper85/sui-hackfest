@@ -1,139 +1,219 @@
 import OpenAI from "openai";
 import { config } from "../config/env";
-import type {
-    DocumentExtractionResult,
-    ProbabilityAssessment,
-} from "../types";
+import type { DocumentExtractionResult, ProbabilityAssessment } from "../types";
 
 class LLMService {
-    private openai: OpenAI;
+  private openai: OpenAI;
 
-    constructor() {
-        this.openai = new OpenAI({
-            apiKey: config.openai.apiKey,
-        });
+  constructor() {
+    this.openai = new OpenAI({
+      apiKey: config.openai.apiKey,
+      ...(config.openai.baseUrl && { baseURL: config.openai.baseUrl }),
+    });
+  }
+
+  /**
+   * Extract structured data from document text
+   */
+  async extractDocumentData(
+    documentText: string,
+    documentType: string,
+  ): Promise<{
+    result: DocumentExtractionResult;
+    tokensUsed: number;
+    cost: number;
+  }> {
+    const prompt = this.buildExtractionPrompt(documentText, documentType);
+
+    const startTime = Date.now();
+    const response = await this.openai.chat.completions.create({
+      model: config.openai.model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a financial document analyzer. Extract structured data from documents and return valid JSON only.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0.1,
+      response_format: { type: "json_object" },
+    });
+
+    const latency = Date.now() - startTime;
+    const usage = response.usage;
+    const content = response.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("No response from LLM");
     }
 
-    /**
-     * Extract structured data from document text
-     */
-    async extractDocumentData(
-        documentText: string,
-        documentType: string
-    ): Promise<{
-        result: DocumentExtractionResult;
-        tokensUsed: number;
-        cost: number;
-    }> {
-        const prompt = this.buildExtractionPrompt(documentText, documentType);
+    try {
+      const result = JSON.parse(content) as DocumentExtractionResult;
 
-        const startTime = Date.now();
-        const response = await this.openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                {
-                    role: "system",
-                    content:
-                        "You are a financial document analyzer. Extract structured data from documents and return valid JSON only.",
-                },
-                {
-                    role: "user",
-                    content: prompt,
-                },
-            ],
-            temperature: 0.1,
-            response_format: { type: "json_object" },
-        });
+      // Calculate cost (GPT-4o pricing: ~$5/1M input, $15/1M output tokens)
+      const inputCost = ((usage?.prompt_tokens || 0) / 1_000_000) * 5;
+      const outputCost = ((usage?.completion_tokens || 0) / 1_000_000) * 15;
+      const totalCost = inputCost + outputCost;
 
-        const latency = Date.now() - startTime;
-        const usage = response.usage;
-        const content = response.choices[0]?.message?.content;
+      return {
+        result,
+        tokensUsed: usage?.total_tokens || 0,
+        cost: totalCost,
+      };
+    } catch (error) {
+      throw new Error(`Failed to parse LLM response: ${error}`);
+    }
+  }
 
-        if (!content) {
-            throw new Error("No response from LLM");
-        }
+  /**
+   * Extract collateral information from structured document data
+   */
+  async extractCollateralFromStructuredData(
+    structuredData: Record<string, any>,
+    documentType: string,
+  ): Promise<{
+    result: {
+      assetType: string | null;
+      assetValueUsd: number | null;
+      assetDescription: string | null;
+      confidence: number;
+      warnings: string[];
+    };
+    tokensUsed: number;
+    cost: number;
+  }> {
+    const prompt = `
+You are a collateral analyst. Use the structured document data below and extract collateral information.
 
-        try {
-            const result = JSON.parse(content) as DocumentExtractionResult;
+Document Type: ${documentType}
+Structured Data:
+${JSON.stringify(structuredData, null, 2)}
 
-            // Calculate cost (GPT-4o pricing: ~$5/1M input, $15/1M output tokens)
-            const inputCost = ((usage?.prompt_tokens || 0) / 1_000_000) * 5;
-            const outputCost = ((usage?.completion_tokens || 0) / 1_000_000) * 15;
-            const totalCost = inputCost + outputCost;
+Return JSON ONLY with these exact fields:
+{
+  "assetType": "real_estate" | "vehicle" | "crypto" | "securities" | "equipment" | "inventory" | "cash" | "other" | null,
+  "assetValueUsd": number | null,
+  "assetDescription": "string" | null,
+  "confidence": number (0-1),
+  "warnings": ["string"]
+}
 
-            return {
-                result,
-                tokensUsed: (usage?.total_tokens || 0),
-                cost: totalCost,
-            };
-        } catch (error) {
-            throw new Error(`Failed to parse LLM response: ${error}`);
-        }
+Rules:
+- If the document is asset-related, assetValueUsd must be a numeric USD value (no symbols/commas).
+- If not asset-related or unclear, use nulls and add a warning.
+- Do not include any other keys.
+`;
+
+    const response = await this.openai.chat.completions.create({
+      model: config.openai.model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You extract collateral data from structured financial document fields. Return valid JSON only.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0.1,
+      response_format: { type: "json_object" },
+    });
+
+    const usage = response.usage;
+    const content = response.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("No response from LLM");
     }
 
-    /**
-     * Perform probability assessment for risk scoring
-     */
-    async assessDefaultProbability(
-        borrowerProfile: any,
-        extractedData: any[]
-    ): Promise<{
-        result: ProbabilityAssessment;
-        tokensUsed: number;
-        cost: number;
-    }> {
-        const prompt = this.buildProbabilityPrompt(borrowerProfile, extractedData);
+    const parsed = JSON.parse(content) as {
+      assetType: string | null;
+      assetValueUsd: number | null;
+      assetDescription: string | null;
+      confidence: number;
+      warnings: string[];
+    };
 
-        const startTime = Date.now();
-        const response = await this.openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                {
-                    role: "system",
-                    content:
-                        "You are a credit risk analyst. Analyze borrower profiles and assess default probability. Return valid JSON only.",
-                },
-                {
-                    role: "user",
-                    content: prompt,
-                },
-            ],
-            temperature: 0.2,
-            response_format: { type: "json_object" },
-        });
+    const inputCost = ((usage?.prompt_tokens || 0) / 1_000_000) * 5;
+    const outputCost = ((usage?.completion_tokens || 0) / 1_000_000) * 15;
+    const totalCost = inputCost + outputCost;
 
-        const usage = response.usage;
-        const content = response.choices[0]?.message?.content;
+    return {
+      result: parsed,
+      tokensUsed: usage?.total_tokens || 0,
+      cost: totalCost,
+    };
+  }
 
-        if (!content) {
-            throw new Error("No response from LLM");
-        }
+  /**
+   * Perform probability assessment for risk scoring
+   */
+  async assessDefaultProbability(
+    borrowerProfile: any,
+    extractedData: any[],
+  ): Promise<{
+    result: ProbabilityAssessment;
+    tokensUsed: number;
+    cost: number;
+  }> {
+    const prompt = this.buildProbabilityPrompt(borrowerProfile, extractedData);
 
-        try {
-            const result = JSON.parse(content) as ProbabilityAssessment;
+    const startTime = Date.now();
+    const response = await this.openai.chat.completions.create({
+      model: config.openai.model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a credit risk analyst. Analyze borrower profiles and assess default probability. Return valid JSON only.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+    });
 
-            const inputCost = ((usage?.prompt_tokens || 0) / 1_000_000) * 5;
-            const outputCost = ((usage?.completion_tokens || 0) / 1_000_000) * 15;
-            const totalCost = inputCost + outputCost;
+    const usage = response.usage;
+    const content = response.choices[0]?.message?.content;
 
-            return {
-                result,
-                tokensUsed: (usage?.total_tokens || 0),
-                cost: totalCost,
-            };
-        } catch (error) {
-            throw new Error(`Failed to parse LLM response: ${error}`);
-        }
+    if (!content) {
+      throw new Error("No response from LLM");
     }
 
-    /**
-     * Build extraction prompt
-     */
-    private buildExtractionPrompt(
-        documentText: string,
-        documentType: string
-    ): string {
-        return `
+    try {
+      const result = JSON.parse(content) as ProbabilityAssessment;
+
+      const inputCost = ((usage?.prompt_tokens || 0) / 1_000_000) * 5;
+      const outputCost = ((usage?.completion_tokens || 0) / 1_000_000) * 15;
+      const totalCost = inputCost + outputCost;
+
+      return {
+        result,
+        tokensUsed: usage?.total_tokens || 0,
+        cost: totalCost,
+      };
+    } catch (error) {
+      throw new Error(`Failed to parse LLM response: ${error}`);
+    }
+  }
+
+  /**
+   * Build extraction prompt
+   */
+  private buildExtractionPrompt(
+    documentText: string,
+    documentType: string,
+  ): string {
+    return `
 You are a financial document analyzer. Extract structured data from the following document.
 
 Document Type: ${documentType}
@@ -146,7 +226,7 @@ Extract the following information in JSON format:
   "documentDate": "ISO date string or null",
   "accountHolder": "string or null",
   "financialInstitution": "string or null",
-  
+
   "transactions": [
     {
       "date": "ISO date",
@@ -158,18 +238,18 @@ Extract the following information in JSON format:
   "accountBalance": number,
   "averageMonthlyIncome": number,
   "averageMonthlyExpenses": number,
-  
-  "assetType": "string",
+
+  "assetType": "real_estate" | "vehicle" | "crypto" | "securities" | "equipment" | "inventory" | "cash" | "other" | null,
   "assetValue": number,
   "assetOwner": "string",
   "assetDescription": "string",
-  
+
   "revenue": number,
   "expenses": number,
   "netIncome": number,
   "assets": number,
   "liabilities": number,
-  
+
   "confidence": number (0-1),
   "warnings": ["string"],
   "needsHumanReview": boolean
@@ -178,20 +258,23 @@ Extract the following information in JSON format:
 Important:
 - Return ONLY valid JSON
 - Use null for missing values
+- If the document is asset-related (property deed, vehicle title, crypto wallet statement, investment statement), you MUST set assetType and assetValue (numeric USD). If unknown, provide a conservative estimate and add a warning.
+- If the document is NOT asset-related, set assetType and assetValue to null.
+- Use numeric values only (no currency symbols or commas)
 - Be conservative with estimates
 - Flag ambiguous data in warnings
 - Set needsHumanReview to true if document quality is poor or data is unclear
 `;
-    }
+  }
 
-    /**
-     * Build probability assessment prompt
-     */
-    private buildProbabilityPrompt(
-        borrowerProfile: any,
-        extractedData: any[]
-    ): string {
-        return `
+  /**
+   * Build probability assessment prompt
+   */
+  private buildProbabilityPrompt(
+    borrowerProfile: any,
+    extractedData: any[],
+  ): string {
+    return `
 You are a credit risk analyst. Analyze the borrower's financial profile and assess their probability of default.
 
 Borrower Profile:
@@ -236,32 +319,30 @@ Scoring Guide:
 - 40-59: Poor (high default risk)
 - 0-39: Very Poor (very high default risk)
 `;
-    }
+  }
 
-    /**
-     * Generate underwriting report summary
-     */
-    async generateReportSummary(
-        reportData: any
-    ): Promise<string> {
-        const response = await this.openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                {
-                    role: "system",
-                    content:
-                        "You are a financial analyst. Generate a concise executive summary of an underwriting report.",
-                },
-                {
-                    role: "user",
-                    content: `Generate a 2-3 paragraph executive summary of this underwriting report:\n\n${JSON.stringify(reportData, null, 2)}`,
-                },
-            ],
-            temperature: 0.3,
-        });
+  /**
+   * Generate underwriting report summary
+   */
+  async generateReportSummary(reportData: any): Promise<string> {
+    const response = await this.openai.chat.completions.create({
+      model: config.openai.model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a financial analyst. Generate a concise executive summary of an underwriting report.",
+        },
+        {
+          role: "user",
+          content: `Generate a 2-3 paragraph executive summary of this underwriting report:\n\n${JSON.stringify(reportData, null, 2)}`,
+        },
+      ],
+      temperature: 0.3,
+    });
 
-        return response.choices[0]?.message?.content || "";
-    }
+    return response.choices[0]?.message?.content || "";
+  }
 }
 
 export const llmService = new LLMService();

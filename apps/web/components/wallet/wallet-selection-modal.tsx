@@ -13,11 +13,13 @@ import Image from "next/image";
 interface WalletSelectionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onWalletSelect?: (walletName: string) => void;
 }
 
 export function WalletSelectionModal({
   open,
   onOpenChange,
+  onWalletSelect,
 }: WalletSelectionModalProps) {
   const { configuredWallets, detectedWallets, select } = useWallet();
 
@@ -28,6 +30,7 @@ export function WalletSelectionModal({
   );
 
   const handleSelect = async (walletName: string) => {
+    onWalletSelect?.(walletName);
     const wallet = wallets.find((w) => w.name === walletName);
     console.log("Selected wallet:", wallet);
 

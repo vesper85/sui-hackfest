@@ -1,0 +1,16 @@
+Mock Bank Statement
+
+Account Holder: Jane Doe
+Account Number: 123456789
+Bank: Example National Bank
+Statement Period: 2024-01-01 to 2024-03-31
+
+Transactions:
+- 2024-01-05 Payroll Deposit: +$5,200.00
+- 2024-01-12 Rent Payment: -$1,800.00
+- 2024-02-02 Payroll Deposit: +$5,200.00
+- 2024-02-20 Utilities: -$240.00
+- 2024-03-01 Payroll Deposit: +$5,200.00
+- 2024-03-18 Equipment Purchase: -$1,150.00
+
+Ending Balance: $14,310.00

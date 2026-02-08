@@ -1,0 +1,14 @@
+Mock Crypto Wallet Statement
+
+Wallet Address: 0xabc123...789
+Network: Sui Testnet
+Period: 2024-01-01 to 2024-03-31
+
+Holdings:
+- SUI: 4,250.50
+- USDC: 12,500.00
+
+Recent Activity:
+- 2024-01-10 Deposit: +500 SUI
+- 2024-02-14 Swap: -200 SUI, +2,000 USDC
+- 2024-03-22 Transfer: -50 SUI
