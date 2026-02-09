@@ -16,7 +16,7 @@ import { LayoutGrid, Briefcase } from "lucide-react";
 
 export default function InvestorPage() {
   const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api";
   const [pools, setPools] = useState<Pool[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalLoanVolume: 0,

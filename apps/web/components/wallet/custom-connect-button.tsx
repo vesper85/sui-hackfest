@@ -29,7 +29,7 @@ export function CustomConnectButton() {
   const authInFlight = useRef(false);
   const manualConnect = useRef(false);
   const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api";
   const resolvedAddress = address ?? account?.address;
   const setUser = useUserStore((state: UserState) => state.setUser);
   const clearUser = useUserStore((state: UserState) => state.clearUser);

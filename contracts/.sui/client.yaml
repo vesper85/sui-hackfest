@@ -1,0 +1,25 @@
+---
+keystore:
+  File: /Users/nisargthakkar/Projects/hackthemoney/sui-hackfest/contracts/.sui/sui.keystore
+external_keys: ~
+envs:
+  - alias: testnet
+    rpc: "https://fullnode.testnet.sui.io:443"
+    ws: ~
+    basic_auth: ~
+    chain_id: 4c78adac
+  - alias: mainnet
+    rpc: "https://fullnode.mainnet.sui.io:443"
+    ws: ~
+    basic_auth: ~
+    chain_id: 35834a8a
+  - alias: devnet
+    rpc: "https://fullnode.devnet.sui.io:443"
+    ws: ~
+    basic_auth: ~
+  - alias: local
+    rpc: "http://127.0.0.1:9000"
+    ws: ~
+    basic_auth: ~
+active_env: testnet
+active_address: "0x24b580e2c0ac7bfa83d9eb458d64b7a31ebb302fcac86beea3fbcc407bb4f694"

@@ -18,7 +18,7 @@ interface InvestRedeemPanelProps {
 export function InvestRedeemPanel({ pool }: InvestRedeemPanelProps) {
   const { connected, address, account } = useWallet();
   const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api";
   const walletAddress = address ?? account?.address ?? "";
   const balance = 0; // Placeholder as balance fetching requires additional logic/hooks
   const [investAmount, setInvestAmount] = useState("");

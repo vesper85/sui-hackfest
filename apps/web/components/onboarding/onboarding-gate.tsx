@@ -24,7 +24,7 @@ export function OnboardingGate() {
   );
   const setUser = useUserStore((state: UserState) => state.setUser);
   const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api";
 
   const [selectedRole, setSelectedRole] = useState<RoleSelection>(null);
   const [borrowerType, setBorrowerType] = useState<BorrowerType>(null);

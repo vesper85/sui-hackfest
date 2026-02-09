@@ -41,7 +41,7 @@ const formatCurrency = (value: number) => {
 
 export default function AdminPage() {
   const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api";
   const [submissions, setSubmissions] = useState<AdminSubmission[]>([]);
   const [loading, setLoading] = useState(false);
 

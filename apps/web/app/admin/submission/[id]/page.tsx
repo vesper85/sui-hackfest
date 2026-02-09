@@ -133,7 +133,7 @@ const formatStructuredRows = (data: Record<string, any>) =>
 export default function AdminSubmissionPage({ params }: PageProps) {
   const { id } = use(params);
   const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api";
   const [detail, setDetail] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -19,7 +19,7 @@ interface PoolDetailPageProps {
 export default function PoolDetailPage({ params }: PoolDetailPageProps) {
   const { id } = use(params);
   const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api";
   const [pool, setPool] = useState<Pool | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
